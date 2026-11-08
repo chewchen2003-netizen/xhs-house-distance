@@ -22,6 +22,9 @@
 
 ## 安装
 
+> **不想看代码？** 直接下载 [Releases](https://github.com/chewchen2003-netizen/xhs-house-distance/releases/latest) 里的 zip，
+> 解压后双击 `安装教程.html`，按图文步骤点几下就好。
+
 > 这是「未打包扩展」，不需要上架商店，本地加载即可。安装后**不要移动或删除**这个文件夹。
 
 ### macOS
