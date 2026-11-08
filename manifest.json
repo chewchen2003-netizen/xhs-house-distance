@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "看房距离助手 · 小红书",
+  "version": "1.2.1",
+  "description": "在北京/上海租房刷小红书时，直接看到这套房子到你公司等地点有多远，不用再切地图搜小区。",
+  "permissions": ["storage", "contextMenus", "activeTab"],
+  "host_permissions": [
+    "*://*.xiaohongshu.com/*",
+    "*://map.baidu.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "看房距离助手",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.xiaohongshu.com/*"],
+      "js": ["lib/geo.js", "lib/detect.js", "content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

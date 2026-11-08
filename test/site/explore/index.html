@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>小红书 · 看房距离助手 测试台</title>
+<link rel="stylesheet" href="../../../content/content.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #fff;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #1f1f1f;
+  }
+  .top { height: 64px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 20px; padding: 0 28px; }
+  .logo { font-weight: 700; color: #ff2442; letter-spacing: .5px; }
+  .tabs { display: flex; gap: 22px; margin-left: 40px; font-size: 15px; color: #333; }
+  .tabs b { color: #1f1f1f; }
+  .tabs span { color: #999; }
+  .wrap { max-width: 1180px; margin: 18px auto 60px; padding: 0 24px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  section.note-item { display: block; }
+  .cover { position: relative; border-radius: 10px; overflow: hidden; background: #f5f5f5; height: 210px; }
+  .cover img { width: 100%; height: 210px; object-fit: cover; display: block; }
+  .footer { padding: 9px 2px 0; }
+  .title { font-size: 14px; font-weight: 600; line-height: 1.45; color: #1f1f1f;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .author { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: #999; }
+  .avatar { width: 18px; height: 18px; border-radius: 50%; background: #ddd; }
+  .like { margin-left: auto; }
+  .fake-sel { margin-top: 8px; font-size: 13px; color: #555; background: #fffbe6; display: inline-block; padding: 2px 6px; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">小红书</div>
+  <div class="tabs"><b>推荐</b><span>穿搭</span><span>美食</span><span>彩妆</span><span>影视</span><span>职场</span><span>情感</span><span>家居</span></div>
+</div>
+
+<div class="wrap">
+  <p class="fake-sel" id="fakeSel">望京西园三区</p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script src="../mock.js"></script>
+
+<script src="../../../lib/geo.js"></script>
+<script src="../../../lib/detect.js"></script>
+<script src="../../../content/content.js"></script>
+
+<script>
+/* 假信息流 */
+const CARDS = [
+  { t: '望京西园三区 一居室转租 5000，离望京SOHO走路 15 分钟', a: '小圆租房记', c: 'linear-gradient(135deg,#ffd9d9,#ffb3b3)' },
+  { t: '居然有人扒出了白小纯的心结卡', a: '吃瓜群众', c: 'linear-gradient(135deg,#d9e6ff,#b3c8ff)' },
+  { t: '国贸上班党看过来！建外SOHO 精装一居 5500 拎包入住', a: '北京租房情报', c: 'linear-gradient(135deg,#e6ffe6,#b3e6b3)' },
+  { t: '常营苹果派 两居 4800 地铁6号线 8 分钟到站', a: '朝阳房东直租', c: 'linear-gradient(135deg,#fff0cc,#ffe099)' },
+  { t: '望京花园东区 合租次卧 2600，房东人很好', a: '北漂第七年', c: 'linear-gradient(135deg,#f0e6ff,#d9b3ff)' },
+  { t: '这下是真全员拿到大芒果了', a: '综艺观察员', c: 'linear-gradient(135deg,#ffd9e6,#ffb3cc)' },
+  { t: '后沙峪 独栋别墅 5500 一个月 带院子', a: '顺义生活', c: 'linear-gradient(135deg,#d9fff6,#b3ffe6)' },
+  { t: '国贸三期附近 一居 6000，通勤 5 分钟', a: 'CBD打工人', c: 'linear-gradient(135deg,#ffe6d9,#ffccb3)' }
+];
+const grid = document.getElementById('grid');
+CARDS.forEach((c, i) => {
+  const sec = document.createElement('section');
+  sec.className = 'note-item';
+  sec.innerHTML = '<a href="/explore/66f0c1d' + (100000 + i) + '" style="text-decoration:none;color:inherit">' +
+    '<div class="cover" style="background:' + c.c + '"></div>' +
+    '<div class="footer">' +
+      '<div class="title">' + c.t + '</div>' +
+      '<div class="author"><span class="avatar"></span><span>' + c.a + '</span><span class="like">♡ ' + (100 + i * 37) + '</span></div>' +
+    '</div></a>';
+  grid.appendChild(sec);
+});
+
+/* 面板截图模式 */
+if (location.search.includes('panel=1')) {
+  setTimeout(() => {
+    const fab = document.querySelector('.xhd-fab');
+    if (fab) fab.click();
+    setTimeout(() => {
+      const input = document.querySelector('.xhd-input');
+      if (input) {
+        input.value = '望京西园三区';
+        const ev = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+        input.dispatchEvent(ev);
+      }
+      if (location.search.includes('view=detail')) {
+        setTimeout(() => {
+          const row = document.querySelector('.xhd-row');
+          if (row) row.click();
+        }, 900);
+      }
+    }, 300);
+  }, 900);
+}
+</script>
+<script>
+if (location.search.includes('diag=1')) {
+  setTimeout(() => {
+    const q = (sel) => document.querySelector(sel);
+    const re = (el) => el ? { x: Math.round(el.getBoundingClientRect().left), w: Math.round(el.getBoundingClientRect().width), sw: el.scrollWidth } : null;
+    document.title = 'xhd-diag ' + JSON.stringify({
+      panel: re(q('.xhd-panel')), body: re(q('.xhd-body')), results: re(q('.xhd-results')),
+      row: re(q('.xhd-row')), main: re(q('.xhd-row-main')), acts: re(q('.xhd-row-acts')),
+      win: window.innerWidth
+    });
+  }, 2200);
+}
+</script>
+</body>
+</html>

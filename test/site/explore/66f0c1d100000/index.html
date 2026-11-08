@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>小红书笔记详情 · 测试台</title>
+<link rel="stylesheet" href="../../../../content/content.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; font: 14px/1.6 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; color: #1f1f1f; }
+  .top { height: 60px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; padding: 0 28px; gap: 18px; }
+  .logo { font-weight: 700; color: #ff2442; }
+  .stage { display: flex; gap: 28px; max-width: 1080px; margin: 24px auto; padding: 0 24px; }
+  .media { flex: 1 1 55%; height: 560px; border-radius: 14px; background: linear-gradient(135deg,#ffe0e0,#ffd0c0); }
+  .content { flex: 1 1 45%; padding: 6px 2px; }
+  #detail-title { font-size: 19px; font-weight: 700; line-height: 1.45; margin: 0 0 10px; }
+  #detail-desc { font-size: 14px; color: #333; white-space: pre-wrap; }
+  .meta { margin-top: 16px; color: #999; font-size: 12px; }
+  .comments-title { font-size: 14px; margin: 24px 0 10px; color: #666; }
+  .comment-item { padding: 10px 0; border-bottom: 1px solid #f6f6f6; display: flex; gap: 10px; align-items: flex-start; }
+  .c-avatar { width: 32px; height: 32px; border-radius: 50%; background: #eee; flex: 0 0 auto; }
+  .c-content { flex: 1 1 auto; min-width: 0; }
+  .c-more { flex: 0 0 auto; color: #ccc; font-size: 14px; }
+  .c-author { font-size: 12px; color: #999; margin-bottom: 3px; }
+  .c-text { font-size: 13.5px; color: #333; }
+  .c-meta { font-size: 11px; color: #bbb; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="top"><div class="logo">小红书</div><div style="color:#999">首页 / 笔记详情</div></div>
+<div class="stage">
+  <div class="media"></div>
+  <div class="content">
+    <h1 id="detail-title">北京西二旗上地元中心附近找房子。</h1>
+    <div id="detail-desc">个人转租或房东出租，中介勿扰。
+本人长租，可按年签合同
+11月中下旬入住
+预算:3千
+要求如下：
+1.主卧独卫(明卫带窗户)
+2.朝南，可以接受东南或西南 不接受朝北
+3.冬季集中供暖(个人不需要再交取暖费)
+4.民水民电，出租水电燃气外，无其他冗余款项
+5.步行距离距离上地元中心在1.5km之内，最好在1km内
+以下小区优先考虑：
+燕尚园
+润中苑
+铭科苑
+智学苑
+上第MONA
+金隅凤栖家园
+当代城市家园
+领秀新硅谷
+博雅德园
+安宁庄路11号院</div>
+    <div class="meta">编辑于 3 天前 · 北京</div>
+    <h3 class="comments-title">评论 6</h3>
+    <div class="comments">
+      <div class="comment-item"><div class="c-avatar"></div><div class="c-content"><div class="c-author">momo</div><div class="c-text">万和嘉园二区独卫转租</div><div class="c-meta">10-28 北京 · 赞 5</div></div><div class="c-more">···</div></div>
+      <div class="comment-item"><div class="c-avatar"></div><div class="c-content"><div class="c-author">momo</div><div class="c-text">无中介费服务费</div><div class="c-meta">10-28 北京 · 回复</div></div><div class="c-more">···</div></div>
+      <div class="comment-item"><div class="c-avatar"></div><div class="c-content"><div class="c-author">海淀找房笔记</div><div class="c-text">上地佳园 次卧 2800，有需要的姐妹私信我</div><div class="c-meta">10-29 北京 · 赞 2</div></div><div class="c-more">···</div></div>
+      <div class="comment-item"><div class="c-avatar"></div><div class="c-content"><div class="c-author">橘子汽水</div><div class="c-text">这个价格真的不错，我去年在上地佳园租的 3200</div><div class="c-meta">10-29 北京 · 赞 1</div></div><div class="c-more">···</div></div>
+      <div class="comment-item"><div class="c-avatar"></div><div class="c-content"><div class="c-author">小北</div><div class="c-text">请问还在吗</div><div class="c-meta">10-30 北京</div></div><div class="c-more">···</div></div>
+    </div><div class="c-meta">10-30 北京</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="../../mock.js"></script>
+<script src="../../../../lib/geo.js"></script>
+<script src="../../../../lib/detect.js"></script>
+<script src="../../../../content/content.js"></script>
+<script>
+if (location.search.includes('panel=1')) {
+  setTimeout(() => {
+    const row = document.querySelector('.xhd-place-row');
+    if (row) row.click();
+  }, 2200);
+}
+</script>
+<script>
+if (location.search.includes('favs=1')) {
+  setTimeout(() => {
+    document.querySelector('.xhd-fav-all')?.click();
+    setTimeout(() => document.querySelector('.xhd-fav-btn')?.click(), 400);
+  }, 2600);
+}
+</script>
+</body>
+</html>

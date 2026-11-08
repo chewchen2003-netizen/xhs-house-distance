@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>看房距离助手</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="hd">
+    <div class="hd-logo">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z" fill="#fff"/>
+        <circle cx="12" cy="9" r="2.6" fill="#ff2442"/>
+      </svg>
+    </div>
+    <div class="hd-title">
+      <b>看房距离助手</b>
+      <span>小红书上看房，直接看距离</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="block">
+      <div class="block-head">
+        <span>我的地点</span>
+        <button id="btnAdd" class="ghost">+ 添加</button>
+      </div>
+      <div id="anchorList" class="anchors"></div>
+      <div id="addForm" class="add-form" hidden>
+        <input id="anchorName" class="input" type="text" placeholder="备注名，如 公司">
+        <div class="row">
+          <input id="anchorQuery" class="input" type="text" placeholder="搜索地点，如 国贸三期">
+          <button id="btnAnchorSearch" class="btn">搜</button>
+        </div>
+        <div id="anchorStatus" class="status"></div>
+        <div id="anchorResults" class="results"></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head"><span>查地点距离</span></div>
+      <div class="row">
+        <input id="q" class="input" type="text" placeholder="小区 / 地铁站 / 商场">
+        <button id="btnSearch" class="btn">查</button>
+      </div>
+      <div id="status" class="status"></div>
+      <div id="results" class="results"></div>
+    </section>
+
+    <section class="block">
+      <div class="block-head"><span>设置</span></div>
+      <label class="opt">
+        <span>搜索城市</span>
+        <select id="city" class="select">
+          <option value="131">北京</option>
+          <option value="0">不限城市</option>
+        </select>
+      </label>
+      <label class="opt">
+        <span>信息流卡片自动显示距离</span>
+        <input id="autoTag" type="checkbox" class="switch">
+      </label>
+      <label class="opt">
+        <span>固定悬浮窗（常驻页面）</span>
+        <input id="pinSwitch" type="checkbox" class="switch">
+      </label>
+      <label class="opt">
+        <span>同时显示最近地铁站</span>
+        <input id="subway" type="checkbox" class="switch">
+      </label>
+    </section>
+  </main>
+
+  <footer class="ft">
+    <a href="https://www.xiaohongshu.com/explore" target="_blank" rel="noreferrer">打开小红书 →</a>
+    <span id="ver" class="ver"></span>
+  </footer>
+
+  <script src="../lib/geo.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

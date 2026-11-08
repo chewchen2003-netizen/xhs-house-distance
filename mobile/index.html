@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="看房距离">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ff2442">
+<title>看房距离</title>
+<style>
+  :root {
+    --red: #ff2442;
+    --red-soft: #fff0f2;
+    --line: #eee;
+    --muted: #999;
+    --bg: #f7f7f8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: #1f1f1f;
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust: 100%;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff;
+    padding: calc(12px + env(safe-area-inset-top)) 16px 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo {
+    width: 30px; height: 30px; border-radius: 9px; flex: 0 0 auto;
+    background: linear-gradient(145deg, #ff2442, #ff5b6e);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 8px rgba(255, 36, 66, .25);
+  }
+  .logo svg { width: 18px; height: 18px; }
+  header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+  header p { margin: 0; font-size: 11px; color: var(--muted); line-height: 1.3; }
+
+  main { padding: 12px 12px 20px; }
+  .card {
+    background: #fff; border-radius: 14px; padding: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
+    margin-bottom: 12px;
+  }
+  .card h2 {
+    font-size: 12px; color: #666; font-weight: 600;
+    margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between;
+  }
+  textarea, input {
+    width: 100%; border: 1px solid var(--line); background: #fafafa;
+    border-radius: 10px; padding: 10px 12px; font-size: 15px; color: #222;
+    font-family: inherit; outline: none; -webkit-appearance: none;
+  }
+  textarea { min-height: 108px; resize: vertical; line-height: 1.55; }
+  textarea:focus, input:focus { border-color: #ff8a9b; background: #fff; }
+  .btn {
+    width: 100%; border: none; border-radius: 10px; background: var(--red);
+    color: #fff; font-size: 15px; font-weight: 600; padding: 12px; margin-top: 10px;
+    font-family: inherit;
+  }
+  .btn:active { opacity: .85; }
+  .btn-ghost {
+    background: #fff; color: var(--red); border: 1px dashed #ffb3bf;
+    font-size: 13px; padding: 8px 10px; width: auto; margin: 0;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+  .anchor-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .anchor-row .name { flex: 0 0 74px; font-size: 13px; color: #666; }
+  .anchor-row input { flex: 1 1 auto; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--red-soft); color: #c11c37; border-radius: 999px;
+    padding: 4px 10px; font-size: 12.5px;
+  }
+
+  /* 结果卡片 */
+  .result {
+    background: #fff; border-radius: 14px; margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .03); overflow: hidden;
+  }
+  .r-head { padding: 13px 14px 10px; display: flex; gap: 10px; align-items: flex-start; }
+  .r-main { flex: 1 1 auto; min-width: 0; }
+  .r-name { font-size: 15.5px; font-weight: 700; line-height: 1.3; }
+  .r-addr { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .r-star {
+    flex: 0 0 auto; border: 1px solid #ffd7dd; background: #fff; color: #ff2442;
+    border-radius: 9px; padding: 6px 9px; font-size: 15px; line-height: 1;
+  }
+  .r-star.on { background: var(--red); color: #fff; border-color: var(--red); }
+  .r-dists { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
+  .pill {
+    background: var(--red-soft); color: #b32338; border-radius: 8px;
+    padding: 3px 9px; font-size: 12px; white-space: nowrap;
+  }
+  .pill b { color: var(--red); font-size: 13px; }
+  .r-body { border-top: 1px solid #f6f6f6; padding: 4px 14px 12px; display: none; }
+  .result.open .r-body { display: block; }
+  .line { display: flex; gap: 9px; padding: 7px 0; align-items: flex-start; }
+  .line .ic { flex: 0 0 auto; font-size: 15px; line-height: 22px; }
+  .line .tx { flex: 1 1 auto; min-width: 0; }
+  .line .m { font-size: 13.5px; }
+  .line .s { font-size: 11.5px; color: #aaa; margin-top: 1px; }
+  .r-links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .r-links a {
+    flex: 1 1 0; text-align: center; text-decoration: none; font-size: 13px;
+    color: var(--red); border: 1px solid #ffd7dd; border-radius: 9px; padding: 8px 0;
+  }
+  .r-links a:active { background: var(--red-soft); }
+
+  .loading { color: var(--muted); font-size: 13px; padding: 8px 2px; }
+  .empty { color: #bbb; font-size: 13px; text-align: center; padding: 28px 10px; line-height: 1.7; }
+  .err { color: #d4380d; font-size: 13px; padding: 8px 2px; }
+
+  /* 底部 tab */
+  nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    display: flex; background: rgba(255, 255, 255, .96);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+    backdrop-filter: blur(8px);
+  }
+  nav button {
+    flex: 1 1 0; border: none; background: transparent; padding: 10px 0 11px;
+    font-size: 11px; color: #999; font-family: inherit; display: flex;
+    flex-direction: column; align-items: center; gap: 3px;
+  }
+  nav button svg { width: 21px; height: 21px; }
+  nav button.on { color: var(--red); }
+  .view { display: none; }
+  .view.on { display: block; }
+
+  .fav-item {
+    background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 9px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .fav-item .fm { flex: 1 1 auto; min-width: 0; }
+  .fav-item .fn { font-size: 14.5px; font-weight: 600; }
+  .fav-item .fd { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .fav-item .fx { border: none; background: transparent; color: #ccc; font-size: 20px; padding: 0 6px; }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom));
+    transform: translate(-50%, 10px); background: rgba(0, 0, 0, .82); color: #fff;
+    padding: 9px 16px; border-radius: 10px; font-size: 13px; opacity: 0;
+    pointer-events: none; transition: .2s; z-index: 50; max-width: 86vw; text-align: center;
+  }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z" fill="#fff"/><circle cx="12" cy="9" r="2.6" fill="#ff2442"/></svg>
+  </div>
+  <div style="flex:1 1 auto;min-width:0">
+    <h1>看房距离</h1>
+    <p id="subtitle">先设置你的地点，再粘贴笔记</p>
+  </div>
+</header>
+
+<main>
+  <!-- 查距离 -->
+  <section class="view on" id="view-query">
+    <div class="card">
+      <h2>粘贴小红书笔记文字 <span id="anchorMini" style="font-weight:400;color:#bbb"></span></h2>
+      <textarea id="input" placeholder="把笔记正文粘进来，一行一个小区也认。&#10;例：万和嘉园二区 独卫转租 3500，离上地很近"></textarea>
+      <button class="btn" id="btnQuery">查距离</button>
+      <div class="hint">也可以只输入一个小区名。识别到多个地点时，会按离你公司的距离排序。</div>
+    </div>
+    <div id="results"></div>
+  </section>
+
+  <!-- 收藏 -->
+  <section class="view" id="view-favs">
+    <div id="favList"></div>
+  </section>
+
+  <!-- 地点 -->
+  <section class="view" id="view-me">
+    <div class="card">
+      <h2>我的地点</h2>
+      <div id="anchorList"></div>
+      <div class="anchor-row" style="margin-top:6px">
+        <span class="name">备注</span>
+        <input id="newName" placeholder="公司 / 健身房…">
+      </div>
+      <div class="anchor-row">
+        <span class="name">地址</span>
+        <input id="newQuery" placeholder="国贸三期">
+      </div>
+      <button class="btn btn-ghost" id="btnAddAnchor">搜索并添加</button>
+      <div id="anchorResults"></div>
+    </div>
+    <div class="card">
+      <h2>说明</h2>
+      <div class="hint">
+        距离用百度地图公开接口计算，不联网不传数据；地点和收藏只存在这台手机的浏览器里。<br><br>
+        地铁方案按「时间 + 步行×0.5」挑选；打车时长不含实时拥堵，仅供参考。
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="on" data-view="query">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    查距离
+  </button>
+  <button data-view="favs">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>
+    收藏
+  </button>
+  <button data-view="me">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4S18.3 16.4 19.5 20"/></svg>
+    地点
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 存储 ---------- */
+  var KEY_A = 'xhd.mobile.anchors';
+  var KEY_F = 'xhd.mobile.favs';
+  var S = { anchors: [], favs: [] };
+
+  function load() {
+    try { S.anchors = JSON.parse(localStorage.getItem(KEY_A) || '[]'); } catch (e) { S.anchors = []; }
+    try { S.favs = JSON.parse(localStorage.getItem(KEY_F) || '[]'); } catch (e) { S.favs = []; }
+  }
+  function saveA() { try { localStorage.setItem(KEY_A, JSON.stringify(S.anchors)); } catch (e) {} }
+  function saveF() { try { localStorage.setItem(KEY_F, JSON.stringify(S.favs)); } catch (e) {} }
+
+  /* ---------- 坐标工具 ---------- */
+  var MCBAND = [12890594.86, 8362377.87, 5591021, 3481989.83, 1678043.12, 0];
+  var MC2LL = [
+    [1.410526172116255e-8, 8.98305509648872e-6, -1.9939833816331, 200.9824383106796, -187.2403703815547, 91.6087516669843, -23.38765649603339, 2.57121317296198, -0.03801003308653, 17337981.2],
+    [-7.435856389565537e-9, 8.983055097726239e-6, -0.78625201886289, 96.32687599759846, -1.85204757529826, -59.36935905485877, 47.40033549296737, -16.50741931063887, 2.28786674699375, 10260144.86],
+    [-3.030883460898826e-8, 8.98305509983578e-6, 0.30071316287616, 59.74293618442277, 7.357984074871, -25.38371002664745, 13.45380521110908, -3.29883767235584, 0.32710905363475, 6856817.37],
+    [-1.981981304930552e-8, 8.983055099779535e-6, 0.03278182852591, 40.31678527705744, 0.65659298677277, -4.44255534477492, 0.85341911805263, 0.12923347998204, -0.04625736007561, 4482777.06],
+    [3.09191371068437e-9, 8.983055096812155e-6, 6.957856341986e-5, 23.10934304144901, -0.00023663490511, -0.6321817810242, -0.00663494467273, 0.03430082397953, -0.00466043876332, 2555164.4],
+    [2.890871144776878e-9, 8.983055095805407e-6, -3.068298e-8, 7.47137025468032, -3.53937994e-6, -0.02145144861037, -1.234426596e-5, 3.295032423e-5, -3.196148e-6, 323248.0]
+  ];
+
+  function mc2ll(x, y) {
+    if (!isFinite(x) || !isFinite(y)) return null;
+    var cF = null, ay = Math.abs(y);
+    for (var i = 0; i < MCBAND.length; i++) { if (ay >= MCBAND[i]) { cF = MC2LL[i]; break; } }
+    if (!cF) return null;
+    var cD = cF[0] + cF[1] * Math.abs(x);
+    var cE = ay / cF[9];
+    var lat = cF[2] + cF[3] * cE + cF[4] * cE * cE + cF[5] * Math.pow(cE, 3) +
+      cF[6] * Math.pow(cE, 4) + cF[7] * Math.pow(cE, 5) + cF[8] * Math.pow(cE, 6);
+    return { lng: cD * (x < 0 ? -1 : 1), lat: lat * (y < 0 ? -1 : 1) };
+  }
+
+  var X_PI = Math.PI * 3000 / 180;
+  function bd2gcj(lng, lat) {
+    var x = lng - 0.0065, y = lat - 0.006;
+    var z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * X_PI);
+    var t = Math.atan2(y, x) - 0.000003 * Math.cos(x * X_PI);
+    return { lng: z * Math.cos(t), lat: z * Math.sin(t) };
+  }
+
+  function haversine(lng1, lat1, lng2, lat2) {
+    var R = 6371008.8, rad = Math.PI / 180;
+    var dLat = (lat2 - lat1) * rad, dLng = (lng2 - lng1) * rad;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+  }
+
+  function fmtDist(m) {
+    if (!isFinite(m)) return '—';
+    if (m < 1000) return Math.max(10, Math.round(m / 10) * 10) + 'm';
+    if (m < 10000) return (m / 1000).toFixed(1).replace(/\.0$/, '') + 'km';
+    return Math.round(m / 1000) + 'km';
+  }
+  function fmtMin(sec) {
+    if (!sec) return '—';
+    var m = Math.round(sec / 60);
+    if (m < 60) return m + 'min';
+    return Math.floor(m / 60) + 'h' + (m % 60 ? (m % 60) + 'm' : '');
+  }
+
+  /* ---------- 地名匹配 ---------- */
+  var SUFFIX = ['小区', '花园', '家园', '新城', '新村', '公寓', '佳苑', '雅苑', '嘉园', '华庭', '华府',
+    '公馆', '大厦', '广场', '中心', '社区', '号院', '大院', '山庄', '别墅', '人家',
+    'SOHO', 'soho', 'MOMA', 'moma', '苑', '园', '里', '城', '府', '湾', '庭', '邸', '墅', '院', '庄'];
+
+  var STOP = ['小区', '花园', '家园', '中心', '广场', '大厦', '公寓', '社区', '公园', '商场', '超市',
+    '写字楼', '地铁站', '公交站', '停车场', '购物中心', '医院', '学院', '法院', '剧院', '影院',
+    '公里', '里', '时间', '房间', '空间', '中间', '里面', '预算', '要求', '主卧', '次卧', '入住',
+    '房东', '中介', '转租', '合租', '整租', '押金', '微信', '电话', '优先', '供暖', '装修', '采光'];
+
+  var LEAD_NOISE = ['位于', '这里', '这个', '那个', '我在', '我住', '就是', '还有', '所在', '附近',
+    '周边', '推荐', '旁边是', '附近是', '对面是', '这里有', '地址是'];
+  var LEAD_CHAR = ['的', '在', '了', '是', '和', '与', '到', '离', '距', '我', '这', '那', '个', '一', '套', '房', '看', '住', '买', '租', '去', '从', '有', '旁', '边', '对', '面', '周', '附', '近'];
+
+  var NOISE_LINE = /入住|预算|要求|步行|距离|优先|小区|房源|房子|合同|装修|家电|家具|房租|押金|微信|电话|联系|中介|房东|转租|合租|整租|主卧|次卧|朝南|朝北|供暖|采光|楼层|电梯|燃气|水电|本人|个人|看房|附近|交通|通勤|室友|租期|面积|户型|费用|收费|包|元|千|万/;
+
+  function cleanName(input) {
+    var c = String(input || '').trim();
+    for (var g = 0; g < 6; g++) {
+      var before = c;
+      LEAD_NOISE.forEach(function (w) { if (c.indexOf(w) === 0 && c.length > w.length + 2) c = c.slice(w.length); });
+      var admin = /^[\u4e00-\u9fa5]{2,4}(?:区|市|县)(?=[\u4e00-\u9fa5A-Za-z0-9])/.exec(c);
+      if (admin && c.length - admin[0].length >= 5) c = c.slice(admin[0].length);
+      while (c.length > 3 && LEAD_CHAR.indexOf(c[0]) >= 0) c = c.slice(1);
+      c = c.replace(/^[0-9号栋幢区县\-—]+/, '');
+      if (c === before) break;
+    }
+    if (c.length < 3 || c.length > 14) return '';
+    if (STOP.indexOf(c) >= 0) return '';
+    if (/^[0-9]+$/.test(c)) return '';
+    return c;
+  }
+
+  function norm(s) {
+    return String(s || '').replace(/[（(【\[]/g, '').replace(/[）)】\]]/g, '')
+      .replace(/[\s·・\-—_.,，。!！?？:：;；'"“”‘’、]/g, '')
+      .replace(/^(北京市|北京)/, '').toLowerCase();
+  }
+
+  function dice(a, b) {
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    var A = [], B = [], i;
+    for (i = 0; i < a.length - 1; i++) A.push(a.slice(i, i + 2));
+    for (i = 0; i < b.length - 1; i++) B.push(b.slice(i, i + 2));
+    if (!A.length || !B.length) return 0;
+    var map = {}, hit = 0;
+    A.forEach(function (g) { map[g] = (map[g] || 0) + 1; });
+    B.forEach(function (g) { if (map[g]) { map[g]--; hit++; } });
+    return 2 * hit / (A.length + B.length);
+  }
+
+  function score(q0, p0) {
+    var q = norm(q0), p = norm(p0);
+    if (!q || !p) return 0;
+    if (q === p) return 1;
+    if (q.length >= 3 && p.indexOf(q) >= 0) return 0.98;
+    if (p.length >= 3 && q.indexOf(p) >= 0) return 0.9;
+    var d = dice(q, p);
+    var q2 = q.replace(/([一二三四五六七八九十0-9]+区|[东西南北]区|北门|南门|东门|西门|店|院)$/, '');
+    var p2 = p.replace(/([一二三四五六七八九十0-9]+区|[东西南北]区|北门|南门|东门|西门|店|院)$/, '');
+    if (q2 !== q || p2 !== p) d = Math.max(d, dice(q2, p2));
+    return d;
+  }
+
+  function candidates(text, limit) {
+    limit = limit || 8;
+    var src = String(text || '').replace(/\r/g, '');
+    var lines = src.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    var raw = [];
+
+    // 一行一个的清单
+    var hits = 0;
+    for (var li = 0; li < lines.length && hits < 12; li++) {
+      var t = lines[li].replace(/^\s*[0-9]{1,2}\s*[.、)）:：]\s*/, '').replace(/^[-–—·•*]\s*/, '').trim();
+      if (!t || t.length < 2 || t.length > 14) continue;
+      if (/[，。！？；：,;!?、:"“”()（）\[\]【】]/.test(t)) continue;
+      if (t.indexOf(' ') >= 0) continue;
+      if (/^[0-9.]+$/.test(t) || /^#/.test(t)) continue;
+      if (NOISE_LINE.test(t)) continue;
+      hits++;
+      raw.push(t);
+    }
+
+    var suffixPart = SUFFIX.map(function (x) { return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
+    var re = new RegExp('([\\u4e00-\\u9fa5A-Za-z0-9\\u00b7]{2,10}(?:' + suffixPart + '))', 'g');
+    function scan(chunk) {
+      var m; re.lastIndex = 0;
+      while ((m = re.exec(chunk)) !== null) {
+        var hit = m[1];
+        var rest = chunk.slice(m.index + hit.length);
+        var zone = /^([一二三四五六七八九十0-9]{1,2}区|[东西南北]区|二期|三期|一期)/.exec(rest);
+        if (zone) hit += zone[1];
+        raw.push(hit);
+        if (m.index === re.lastIndex) re.lastIndex++;
+      }
+    }
+    lines.forEach(scan);
+    scan(src.replace(/\s+/g, ' '));
+
+    var reEn = /([\u4e00-\u9fa5]{2,6}[A-Za-z]{2,6})/g, me;
+    while ((me = reEn.exec(src)) !== null) raw.push(me[1]);
+
+    var out = [];
+    raw.forEach(function (x) { var c = cleanName(x); if (c && out.indexOf(c) < 0) out.push(c); });
+    // 去掉「XX上地元中心」这种把前缀带进来的长名
+    out = out.filter(function (x) {
+      return !out.some(function (y) {
+        return y !== x && y.length >= 3 && y.length < x.length && x.slice(x.length - y.length) === y;
+      });
+    });
+    return out.slice(0, limit);
+  }
+
+  /* ---------- JSONP 请求（百度地图支持 callback） ---------- */
+  var lastCall = 0, chain = Promise.resolve();
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function jsonp(url) {
+    return new Promise(function (resolve, reject) {
+      var name = 'xhd_cb_' + Math.random().toString(36).slice(2);
+      var s = document.createElement('script');
+      var done = false;
+      function cleanup() {
+        try { delete window[name]; } catch (e) { window[name] = undefined; }
+        if (s.parentNode) s.parentNode.removeChild(s);
+      }
+      window[name] = function (data) { done = true; cleanup(); resolve(data); };
+      s.onerror = function () { if (!done) { cleanup(); reject(new Error('网络请求失败')); } };
+      s.src = url + '&callback=' + name + '&_=' + Date.now();
+      document.head.appendChild(s);
+      setTimeout(function () { if (!done) { cleanup(); reject(new Error('请求超时')); } }, 12000);
+    });
+  }
+
+  function serial(fn) {
+    chain = chain.then(function () {
+      var gap = lastCall + 280 - Date.now();
+      return wait(gap > 0 ? gap : 0).then(function () { lastCall = Date.now(); return fn(); });
+    }, function () {
+      var gap = lastCall + 280 - Date.now();
+      return wait(gap > 0 ? gap : 0).then(function () { lastCall = Date.now(); return fn(); });
+    });
+    return chain;
+  }
+
+  var BASE = 'https://map.baidu.com/?';
+
+  function searchUrl(wd) {
+    return BASE + 'qt=s&wd=' + encodeURIComponent(wd) + '&c=131&src=0&pn=0&sug=0&l=19&b=(0,0;0,0)' +
+      '&from=webmap&tn=B_NORMAL_MAP&nn=0&ie=utf-8&oue=1&res=api';
+  }
+
+  function parseGeo(geo) {
+    if (!geo) return null;
+    var m = /(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/.exec(geo);
+    return m ? [+m[1], +m[2]] : null;
+  }
+
+  function pickPois(data) {
+    var list = (data && data.content) || [], out = [];
+    list.forEach(function (it) {
+      if (!it || !it.name) return;
+      var mc = parseGeo(it.geo);
+      if (!mc) return;
+      var ll = mc2ll(mc[0], mc[1]);
+      if (!ll) return;
+      out.push({
+        uid: it.uid || it.name, name: String(it.name).trim(),
+        addr: it.addr || it.area_name || '', tag: it.std_tag || '',
+        cityId: it.city_id || 131,
+        mcX: mc[0], mcY: mc[1], lng: ll.lng, lat: ll.lat
+      });
+    });
+    return out;
+  }
+
+  function search(wd) {
+    return serial(function () { return jsonp(searchUrl(wd)); }).then(pickPois);
+  }
+
+  function resolvePlace(wd) {
+    return search(wd).then(function (list) {
+      var best = null, bs = 0;
+      list.forEach(function (p) {
+        var s = score(wd, p.name);
+        if (/房地产|住宅|公寓|楼盘|小区/.test(p.tag)) s += 0.02;
+        if (s > bs) { bs = s; best = p; }
+      });
+      return bs >= 0.6 ? best : null;
+    });
+  }
+
+  function routePoint(p) {
+    return '1$$' + (p.uid || '') + '$$' + ((isFinite(p.mcX) && isFinite(p.mcY)) ? (p.mcX + ',' + p.mcY) : '') +
+      '$$' + encodeURIComponent(p.name || '') + '$$$$$$';
+  }
+
+  function routeUrl(qt, from, to, extra) {
+    return BASE + 'qt=' + qt + '&' + (extra || '') + 'c=' + (from.cityId || 131) +
+      '&sn=' + routePoint(from) + '&en=' + routePoint(to) +
+      '&sy=0&ie=utf-8&oue=1&res=api';
+  }
+
+  function pickLines(scheme) {
+    var out = [];
+    (scheme.lines || []).forEach(function (g) {
+      if (!Array.isArray(g)) return;
+      g.forEach(function (it) {
+        if (it && typeof it === 'object' && it.name) {
+          out.push({
+            name: String(it.name).replace(/\(.*?\)/g, '').replace(/^地铁/, '').trim(),
+            type: it.type
+          });
+        }
+      });
+    });
+    return out;
+  }
+
+  function transit(from, to) {
+    return serial(function () { return jsonp(routeUrl('bt', from, to, 'bttp=0&')); }).then(function (raw) {
+      var list = Array.isArray(raw && raw.content) ? raw.content : [];
+      var schemes = [];
+      list.forEach(function (it) {
+        var ext = (it.exts && it.exts[0]) || {};
+        var lines = pickLines(it);
+        if (!lines.length) return;
+        schemes.push({
+          time: ext.time || 0, distance: ext.distance || 0,
+          price: (ext.price || 0) / 100,
+          walkDistance: ext.walk_distance || 0, walkTime: ext.walk_time || 0,
+          lines: lines, transfers: Math.max(0, lines.length - 1),
+          hasSubway: lines.some(function (l) { return l.type === 1; })
+        });
+      });
+      if (!schemes.length) return null;
+      var sc = function (x) { return x.time + x.walkTime * 0.5; };
+      schemes.sort(function (a, b) {
+        if (a.hasSubway !== b.hasSubway) return a.hasSubway ? -1 : 1;
+        return sc(a) - sc(b);
+      });
+      return schemes[0];
+    }).catch(function () { return null; });
+  }
+
+  function drive(from, to) {
+    return serial(function () { return jsonp(routeUrl('nav', from, to, '')); }).then(function (raw) {
+      var c = raw && raw.content;
+      if (!c || typeof c !== 'object' || !c.dis) return null;
+      var day = (c.taxi && c.taxi.detail || []).filter(function (d) { return /白天/.test(d.desc || ''); })[0] ||
+        (c.taxi && c.taxi.detail || [])[0] || {};
+      return { distance: c.dis, time: c.time || 0, taxiPrice: day.totalPrice ? Number(day.totalPrice) : null };
+    }).catch(function () { return null; });
+  }
+
+  function nearestSubway(poi) {
+    var R = 2500;
+    var bbox = '(' + Math.round(poi.mcX - R) + ',' + Math.round(poi.mcY - R) + ';' +
+      Math.round(poi.mcX + R) + ',' + Math.round(poi.mcY + R) + ')';
+    var url = BASE + 'qt=con&wd=' + encodeURIComponent('地铁站') + '&c=' + (poi.cityId || 131) +
+      '&src=0&pn=0&sug=0&l=19&b=' + bbox + '&from=webmap&tn=B_NORMAL_MAP&nn=0&rn=10&ie=utf-8&oue=1&res=api';
+    return serial(function () { return jsonp(url); }).then(function (raw) {
+      var pois = pickPois(raw), min = Infinity, best = null;
+      pois.forEach(function (p) {
+        if (!/地铁/.test(p.tag)) return;
+        var d = haversine(p.lng, p.lat, poi.lng, poi.lat);
+        if (d < min) { min = d; best = { name: p.name, dist: Math.round(d) }; }
+      });
+      return best;
+    }).catch(function () { return null; });
+  }
+
+  /* ---------- 视图 ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var current = [];
+
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(t._t);
+    t._t = setTimeout(function () { t.classList.remove('on'); }, 2200);
+  }
+
+  function primary() { return S.anchors[0] || null; }
+
+  function subtitle() {
+    var a = primary();
+    $('anchorMini').textContent = a ? '· 到' + a.name : '· 还没设置地点';
+    $('subtitle').textContent = a ? ('地点：' + a.name + (S.anchors.length > 1 ? ' 等 ' + S.anchors.length + ' 个' : '')) : '先到「地点」里设置公司';
+  }
+
+  function renderAnchorList() {
+    var box = $('anchorList');
+    box.innerHTML = '';
+    if (!S.anchors.length) {
+      box.innerHTML = '<div class="hint" style="margin:0 0 8px">还没有地点，先在下面搜一个（比如你的公司）。</div>';
+      return;
+    }
+    S.anchors.forEach(function (a, i) {
+      var row = document.createElement('div');
+      row.className = 'anchor-row';
+      row.innerHTML = '<span class="name">' + esc(a.name) + '</span>' +
+        '<div style="flex:1 1 auto;font-size:12.5px;color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(a.addr || '') + '</div>';
+      var del = document.createElement('button');
+      del.textContent = '×';
+      del.style.cssText = 'border:none;background:transparent;color:#ccc;font-size:18px;padding:0 8px';
+      del.onclick = function () { S.anchors.splice(i, 1); saveA(); renderAnchorList(); subtitle(); };
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  function amapLink(poi) {
+    var g = bd2gcj(poi.lng, poi.lat);
+    return 'https://uri.amap.com/marker?position=' + g.lng.toFixed(6) + ',' + g.lat.toFixed(6) +
+      '&name=' + encodeURIComponent(poi.name) + '&coordinate=gaode&callnative=1';
+  }
+
+  function amapRoute(poi) {
+    var a = primary();
+    if (!a) return amapLink(poi);
+    var f = bd2gcj(a.lng, a.lat), t = bd2gcj(poi.lng, poi.lat);
+    return 'https://uri.amap.com/navigation?from=' + f.lng.toFixed(6) + ',' + f.lat.toFixed(6) + ',' +
+      encodeURIComponent(a.name) + '&to=' + t.lng.toFixed(6) + ',' + t.lat.toFixed(6) + ',' +
+      encodeURIComponent(poi.name) + '&mode=bus&coordinate=gaode&callnative=1';
+  }
+
+  var cardMap = null, cardBox = null;
+
+  function resetResults() {
+    cardBox = $('results');
+    cardBox.innerHTML = '';
+    cardMap = {};
+  }
+
+  function addResult(poi) {
+    if (!cardBox) resetResults();
+    if (cardMap[poi.uid]) return;
+    var el = resultCard(poi);
+    cardMap[poi.uid] = el;
+    cardBox.appendChild(el);
+    sortCards();
+  }
+
+  function sortCards() {
+    var a = primary();
+    if (!a || !cardBox) return;
+    var arr = Array.prototype.slice.call(cardBox.children);
+    arr.sort(function (x, y) { return Number(x.dataset.dist) - Number(y.dataset.dist); });
+    arr.forEach(function (n) { cardBox.appendChild(n); });   // 移动节点，保留展开状态
+  }
+
+  function finishResults(count) {
+    if (!cardBox) return;
+    if (!count) {
+      cardBox.innerHTML = '<div class="empty">没识别到具体的小区。<br>试试把「XX小区 / XX苑 / XX园」这样的名字也贴进来。</div>';
+      return;
+    }
+    sortCards();
+    if (/open=1/.test(location.search) && cardBox.firstChild && cardBox.firstChild.querySelector('.r-head')) {
+      setTimeout(function () { cardBox.firstChild.querySelector('.r-head').click(); }, 200);
+    }
+  }
+
+  function resultCard(poi) {
+    var a = primary();
+    var el = document.createElement('div');
+    el.className = 'result';
+    el.dataset.dist = a ? String(haversine(a.lng, a.lat, poi.lng, poi.lat)) : '0';
+
+    var head = document.createElement('div');
+    head.className = 'r-head';
+    var main = document.createElement('div');
+    main.className = 'r-main';
+    main.innerHTML = '<div class="r-name">' + esc(poi.name) + '</div>' +
+      (poi.addr ? '<div class="r-addr">' + esc(poi.addr) + '</div>' : '');
+    var star = document.createElement('button');
+    star.className = 'r-star' + (isFav(poi) ? ' on' : '');
+    star.textContent = isFav(poi) ? '★' : '☆';
+    star.onclick = function (e) {
+      e.stopPropagation();
+      var on = toggleFav(poi);
+      star.classList.toggle('on', on);
+      star.textContent = on ? '★' : '☆';
+    };
+    head.appendChild(main);
+    head.appendChild(star);
+    el.appendChild(head);
+
+    if (a) {
+      var dists = document.createElement('div');
+      dists.className = 'r-dists';
+      var chip = document.createElement('span');
+      chip.className = 'pill';
+      chip.innerHTML = '距' + esc(a.name) + ' <b>' + fmtDist(haversine(a.lng, a.lat, poi.lng, poi.lat)) + '</b>';
+      dists.appendChild(chip);
+      var tChip = document.createElement('span');
+      tChip.className = 'pill';
+      tChip.textContent = '点开看通勤';
+      dists.appendChild(tChip);
+      el.appendChild(dists);
+
+      // 点开算详情
+      var body = document.createElement('div');
+      body.className = 'r-body';
+      el.appendChild(body);
+
+      head.onclick = function () {
+        el.classList.toggle('open');
+        if (el.classList.contains('open') && !body.dataset.loaded) {
+          body.dataset.loaded = '1';
+          body.innerHTML = '<div class="loading">正在算地铁 / 打车…</div>';
+          Promise.all([transit(a, poi), drive(a, poi), nearestSubway(poi)]).then(function (r) {
+            body.innerHTML = '';
+            var t = r[0], d = r[1], sw = r[2];
+            if (t) {
+              tChip.innerHTML = '🚇 <b>' + fmtMin(t.time) + '</b>';
+              body.appendChild(line('🚇',
+                '地铁 ' + fmtMin(t.time) + ' · ¥' + t.price + ' · 步行 ' + fmtDist(t.walkDistance),
+                t.lines.map(function (l) { return l.name; }).join(' → ') +
+                (t.transfers ? ' · 换乘 ' + t.transfers + ' 次' : ' · 不用换乘')));
+            }
+            if (d) {
+              body.appendChild(line('🚕',
+                '打车 ' + fmtDist(d.distance) + ' · ' + fmtMin(d.time) + (d.taxiPrice ? ' · 约¥' + d.taxiPrice : ''),
+                '不含拥堵，实际以实时路况为准'));
+            }
+            if (sw) {
+              body.appendChild(line('📍', '最近地铁 ' + sw.name + ' · ' + fmtDist(sw.dist),
+                '走路约 ' + Math.round(sw.dist / 75) + ' 分钟'));
+            }
+            if (!t && !d && !sw) body.innerHTML = '<div class="hint">没算到路线，点下面用高德看看</div>';
+            var links = document.createElement('div');
+            links.className = 'r-links';
+            links.innerHTML = '<a href="' + amapRoute(poi) + '">高德路线</a>' +
+              '<a href="' + amapLink(poi) + '">高德地图</a>';
+            body.appendChild(links);
+          });
+        }
+      };
+    } else {
+      var tip = document.createElement('div');
+      tip.className = 'r-dists';
+      tip.innerHTML = '<span class="pill">先在「地点」里设置公司</span>';
+      el.appendChild(tip);
+    }
+    return el;
+  }
+
+  function line(icon, main, sub) {
+    var d = document.createElement('div');
+    d.className = 'line';
+    d.innerHTML = '<div class="ic">' + icon + '</div><div class="tx"><div class="m">' +
+      esc(main) + '</div>' + (sub ? '<div class="s">' + esc(sub) + '</div>' : '') + '</div>';
+    return d;
+  }
+
+  /* ---------- 收藏 ---------- */
+  function isFav(poi) {
+    var k = poi.uid || poi.name;
+    return S.favs.some(function (f) { return (f.uid || f.name) === k; });
+  }
+
+  function toggleFav(poi) {
+    var k = poi.uid || poi.name;
+    var i = S.favs.findIndex(function (f) { return (f.uid || f.name) === k; });
+    if (i >= 0) {
+      S.favs.splice(i, 1); saveF(); toast('已取消收藏');
+      renderFavs();
+      return false;
+    }
+    S.favs.unshift({
+      uid: poi.uid, name: poi.name, addr: poi.addr, lng: poi.lng, lat: poi.lat,
+      mcX: poi.mcX, mcY: poi.mcY, cityId: poi.cityId, ts: Date.now()
+    });
+    saveF();
+    toast('已收藏');
+    renderFavs();
+    return true;
+  }
+
+  function renderFavs() {
+    var box = $('favList');
+    box.innerHTML = '';
+    if (!S.favs.length) {
+      box.innerHTML = '<div class="empty">还没有收藏。<br>在结果卡片右上角点 ☆ 就能存下来。</div>';
+      return;
+    }
+    var a = primary();
+    var list = S.favs.slice();
+    if (a) list.sort(function (x, y) { return haversine(a.lng, a.lat, x.lng, x.lat) - haversine(a.lng, a.lat, y.lng, y.lat); });
+
+    list.forEach(function (f) {
+      var el = document.createElement('div');
+      el.className = 'fav-item';
+      var m = document.createElement('div');
+      m.className = 'fm';
+      m.innerHTML = '<div class="fn">' + esc(f.name) + '</div>' +
+        '<div class="fd">' + (a ? '距' + esc(a.name) + ' ' + fmtDist(haversine(a.lng, a.lat, f.lng, f.lat)) + ' · ' : '') +
+        esc(f.addr || '') + '</div>';
+      var del = document.createElement('button');
+      del.className = 'fx';
+      del.textContent = '×';
+      del.onclick = function (e) {
+        e.stopPropagation();
+        S.favs = S.favs.filter(function (x) { return (x.uid || x.name) !== (f.uid || f.name); });
+        saveF(); renderFavs();
+      };
+      el.appendChild(m);
+      el.appendChild(del);
+      el.onclick = function () { showQueryWith(f.name); };
+      box.appendChild(el);
+    });
+  }
+
+  /* ---------- 交互 ---------- */
+  function showQueryWith(text) {
+    switchView('query');
+    $('input').value = text;
+    runQuery();
+  }
+
+  function runQuery() {
+    var text = $('input').value.trim();
+    if (!text) { toast('先粘贴笔记或输入小区名'); return; }
+    if (!primary()) { toast('先到「地点」设置你的公司'); switchView('me'); return; }
+
+    var qs = candidates(text, 8);
+    if (!qs.length) { qs = [text.slice(0, 20)]; }
+
+    resetResults();
+    cardBox.innerHTML = '<div class="loading">正在识别 ' + qs.length + ' 个地点…</div>';
+
+    var found = [], seen = {}, pending = qs.length;
+
+    function done() {
+      current = found;
+      cardBox.querySelectorAll('.loading').forEach(function (n) { n.remove(); });
+      finishResults(found.length);
+    }
+
+    qs.forEach(function (q) {
+      resolvePlace(q).then(function (poi) {
+        pending--;
+        if (poi && !seen[poi.uid]) {
+          seen[poi.uid] = 1;
+          found.push(poi);
+          var ld = cardBox.querySelector('.loading');
+          if (ld) ld.remove();
+          addResult(poi);            // 边识别边出，不重建已有卡片
+        }
+        if (pending === 0) done();
+      }).catch(function () { pending--; if (pending === 0) done(); });
+    });
+  }
+
+  function switchView(v) {
+    ['query', 'favs', 'me'].forEach(function (x) {
+      $('view-' + x).classList.toggle('on', x === v);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
+      b.classList.toggle('on', b.dataset.view === v);
+    });
+    if (v === 'favs') renderFavs();
+    if (v === 'me') renderAnchorList();
+  }
+
+  /* ---------- 启动 ---------- */
+  load();
+  subtitle();
+
+  document.querySelectorAll('nav button').forEach(function (b) {
+    b.onclick = function () { switchView(b.dataset.view); };
+  });
+  $('btnQuery').onclick = runQuery;
+  $('input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) runQuery();
+  });
+
+  $('btnAddAnchor').onclick = function () {
+    var q = $('newQuery').value.trim();
+    if (!q) { toast('先输入地点名'); return; }
+    var box = $('anchorResults');
+    box.innerHTML = '<div class="loading">搜索中…</div>';
+    search(q).then(function (list) {
+      box.innerHTML = '';
+      if (!list.length) { box.innerHTML = '<div class="hint">没找到，换个说法试试</div>'; return; }
+      list.slice(0, 6).forEach(function (poi) {
+        var row = document.createElement('div');
+        row.className = 'fav-item';
+        row.style.cursor = 'pointer';
+        row.innerHTML = '<div class="fm"><div class="fn">' + esc(poi.name) + '</div><div class="fd">' + esc(poi.addr || '') + '</div></div>';
+        row.onclick = function () {
+          var name = $('newName').value.trim() || poi.name;
+          S.anchors.push({
+            name: name, addr: poi.addr || '', uid: poi.uid,
+            lng: poi.lng, lat: poi.lat, mcX: poi.mcX, mcY: poi.mcY, cityId: poi.cityId
+          });
+          saveA();
+          $('newName').value = '';
+          $('newQuery').value = '';
+          box.innerHTML = '';
+          renderAnchorList();
+          subtitle();
+          toast('已添加：' + name);
+          switchView('query');
+        };
+        box.appendChild(row);
+      });
+    }).catch(function () { box.innerHTML = '<div class="err">搜索失败，检查网络</div>'; });
+  };
+
+  if (/debug=1/.test(location.search)) {
+    setTimeout(function () {
+      var n = document.querySelector('nav');
+      document.title = 'w=' + document.documentElement.clientWidth +
+        ' body=' + document.body.scrollWidth +
+        ' nav=' + Math.round(n.getBoundingClientRect().width) +
+        ' btn=' + Math.round(document.querySelector('nav button').getBoundingClientRect().width);
+    }, 800);
+  }
+
+  // 分享链接：...?q=望京西园三区
+  var hash = decodeURIComponent((location.search.match(/[?&]q=([^&]*)/) || [])[1] || '');
+  if (hash) { $('input').value = hash; setTimeout(runQuery, 300); }
+})();
+</script>
+</body>
+</html>
